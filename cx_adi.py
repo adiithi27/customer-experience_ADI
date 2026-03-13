@@ -3,82 +3,136 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-st.set_page_config(page_title="CX Intelligence Dashboard", layout="wide")
+# -----------------------------------
+# PAGE CONFIG
+# -----------------------------------
 
-st.title("Customer Experience Intelligence Dashboard")
+st.set_page_config(
+    page_title="CX Intelligence Dashboard",
+    page_icon="📊",
+    layout="wide"
+)
 
-# Load dataset
+sns.set_style("whitegrid")
+
+# -----------------------------------
+# LOAD DATA
+# -----------------------------------
+
 df = pd.read_csv("cx_simulated_dataset_400.csv")
 
-st.subheader("Dataset Preview")
-st.dataframe(df.head())
+# -----------------------------------
+# SIDEBAR
+# -----------------------------------
 
-# ==============================
-# KPI METRICS
-# ==============================
+st.sidebar.title("CX Dashboard Controls")
+
+selected_variable = st.sidebar.selectbox(
+    "Select variable for distribution",
+    df.columns
+)
+
+x_var = st.sidebar.selectbox("X variable", df.columns)
+y_var = st.sidebar.selectbox("Y variable", df.columns)
+
+# -----------------------------------
+# HEADER
+# -----------------------------------
+
+st.title("📊 Customer Experience Intelligence Dashboard")
+st.markdown("Monitor key drivers of **customer experience, adoption, and retention**.")
+
+st.divider()
+
+# -----------------------------------
+# KPI SECTION
+# -----------------------------------
 
 st.subheader("Key CX Metrics")
 
 col1, col2, col3, col4 = st.columns(4)
 
-col1.metric("Average CXI Score", round(df["cxi_score"].mean(),2))
-col2.metric("Customer Retention", round(df["customer_retention"].mean(),2))
-col3.metric("User Engagement Score", round(df["user_engagement_score"].mean(),2))
-col4.metric("CX Adoption Success", round(df["cx_adoption_success"].mean(),2))
+col1.metric("CXI Score", f"{df['cxi_score'].mean():.2f}")
+col2.metric("Customer Retention", f"{df['customer_retention'].mean():.2f}")
+col3.metric("User Engagement", f"{df['user_engagement_score'].mean():.2f}")
+col4.metric("CX Adoption Success", f"{df['cx_adoption_success'].mean():.2f}")
 
-# ==============================
-# DESCRIPTIVE STATISTICS
-# ==============================
+st.divider()
 
-st.subheader("Descriptive Statistics")
-st.write(df.describe())
+# -----------------------------------
+# DATA PREVIEW
+# -----------------------------------
 
-# ==============================
+with st.expander("View Dataset"):
+    st.dataframe(df)
+
+# -----------------------------------
 # DISTRIBUTION ANALYSIS
-# ==============================
+# -----------------------------------
 
 st.subheader("Variable Distribution")
 
-variable = st.selectbox(
-    "Select Variable",
-    df.columns
-)
-
 fig, ax = plt.subplots()
 
-sns.histplot(df[variable], kde=True, ax=ax)
+sns.histplot(df[selected_variable], kde=True, ax=ax)
 
-ax.set_title(f"Distribution of {variable}")
+ax.set_title(f"Distribution of {selected_variable}")
 
 st.pyplot(fig)
 
-# ==============================
-# CORRELATION HEATMAP
-# ==============================
+st.divider()
 
-st.subheader("Correlation Heatmap")
+# -----------------------------------
+# CORRELATION HEATMAP
+# -----------------------------------
+
+st.subheader("Correlation Analysis")
 
 corr = df.corr()
 
 fig2, ax2 = plt.subplots(figsize=(10,6))
 
-sns.heatmap(corr, annot=True, cmap="coolwarm", ax=ax2)
+sns.heatmap(
+    corr,
+    annot=True,
+    cmap="coolwarm",
+    linewidths=0.5,
+    ax=ax2
+)
+
+ax2.set_title("CX Metrics Correlation Heatmap")
 
 st.pyplot(fig2)
 
-# ==============================
+st.divider()
+
+# -----------------------------------
 # RELATIONSHIP ANALYSIS
-# ==============================
+# -----------------------------------
 
 st.subheader("CX Relationship Analysis")
 
-x_var = st.selectbox("Select X Variable", df.columns)
-y_var = st.selectbox("Select Y Variable", df.columns)
-
 fig3, ax3 = plt.subplots()
 
-sns.scatterplot(data=df, x=x_var, y=y_var, ax=ax3)
+sns.scatterplot(
+    data=df,
+    x=x_var,
+    y=y_var,
+    s=80,
+    alpha=0.7,
+    ax=ax3
+)
 
 ax3.set_title(f"{x_var} vs {y_var}")
 
 st.pyplot(fig3)
+
+st.divider()
+
+# -----------------------------------
+# DESCRIPTIVE STATS
+# -----------------------------------
+
+st.subheader("Descriptive Statistics")
+
+st.dataframe(df.describe())
