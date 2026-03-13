@@ -1,118 +1,84 @@
-# ======================================
-# 1. IMPORT LIBRARIES
-# ======================================
-
+import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-sns.set(style="whitegrid")
 
-# ======================================
-# 2. LOAD DATASET
-# ======================================
+st.set_page_config(page_title="CX Intelligence Dashboard", layout="wide")
 
+st.title("Customer Experience Intelligence Dashboard")
+
+# Load dataset
 df = pd.read_csv("cx_simulated_dataset_400.csv")
 
-# View first rows
-print(df.head())
+st.subheader("Dataset Preview")
+st.dataframe(df.head())
 
-# Dataset structure
-print(df.info())
+# ==============================
+# KPI METRICS
+# ==============================
 
-# ======================================
-# 3. DATA CLEANING
-# ======================================
+st.subheader("Key CX Metrics")
 
-# Remove duplicates
-df = df.drop_duplicates()
+col1, col2, col3, col4 = st.columns(4)
 
-# Check missing values
-print("Missing values:\n", df.isnull().sum())
+col1.metric("Average CXI Score", round(df["cxi_score"].mean(),2))
+col2.metric("Customer Retention", round(df["customer_retention"].mean(),2))
+col3.metric("User Engagement Score", round(df["user_engagement_score"].mean(),2))
+col4.metric("CX Adoption Success", round(df["cx_adoption_success"].mean(),2))
 
-# Fill missing values with median
-df = df.fillna(df.median())
+# ==============================
+# DESCRIPTIVE STATISTICS
+# ==============================
 
-# ======================================
-# 4. DESCRIPTIVE STATISTICS
-# ======================================
+st.subheader("Descriptive Statistics")
+st.write(df.describe())
 
-print("\nSummary Statistics")
-print(df.describe())
+# ==============================
+# DISTRIBUTION ANALYSIS
+# ==============================
 
-# ======================================
-# 5. DISTRIBUTION PLOTS
-# ======================================
+st.subheader("Variable Distribution")
 
-columns = [
-'training_completion_rate',
-'onboarding_days',
-'support_tickets_per_month',
-'user_engagement_score',
-'project_mgmt_score',
-'first_response_time',
-'cx_adoption_success',
-'time_to_value',
-'customer_retention',
-'cxi_score'
-]
+variable = st.selectbox(
+    "Select Variable",
+    df.columns
+)
 
-for col in columns:
-    plt.figure()
-    sns.histplot(df[col], kde=True)
-    plt.title(f"Distribution of {col}")
-    plt.show()
+fig, ax = plt.subplots()
 
-# ======================================
-# 6. BOXPLOT (OUTLIER DETECTION)
-# ======================================
+sns.histplot(df[variable], kde=True, ax=ax)
 
-plt.figure(figsize=(12,6))
-sns.boxplot(data=df)
-plt.xticks(rotation=45)
-plt.title("Outlier Detection Across CX Variables")
-plt.show()
+ax.set_title(f"Distribution of {variable}")
 
-# ======================================
-# 7. CORRELATION ANALYSIS
-# ======================================
+st.pyplot(fig)
 
-corr_matrix = df.corr()
+# ==============================
+# CORRELATION HEATMAP
+# ==============================
 
-plt.figure(figsize=(10,8))
-sns.heatmap(corr_matrix, annot=True, cmap="coolwarm")
-plt.title("Correlation Heatmap of CX Variables")
-plt.show()
+st.subheader("Correlation Heatmap")
 
-# ======================================
-# 8. KEY RELATIONSHIP VISUALIZATIONS
-# ======================================
+corr = df.corr()
 
-# Engagement vs Retention
-sns.scatterplot(data=df, x="user_engagement_score", y="customer_retention")
-plt.title("User Engagement vs Customer Retention")
-plt.show()
+fig2, ax2 = plt.subplots(figsize=(10,6))
 
-# Support Tickets vs CXI Score
-sns.scatterplot(data=df, x="support_tickets_per_month", y="cxi_score")
-plt.title("Support Tickets vs CXI Score")
-plt.show()
+sns.heatmap(corr, annot=True, cmap="coolwarm", ax=ax2)
 
-# Response Time vs CX Adoption
-sns.scatterplot(data=df, x="first_response_time", y="cx_adoption_success")
-plt.title("First Response Time vs CX Adoption Success")
-plt.show()
+st.pyplot(fig2)
 
-# ======================================
-# 9. TOP CORRELATIONS
-# ======================================
+# ==============================
+# RELATIONSHIP ANALYSIS
+# ==============================
 
-corr_pairs = corr_matrix.unstack().sort_values(ascending=False)
+st.subheader("CX Relationship Analysis")
 
-# Remove self correlations
-corr_pairs = corr_pairs[corr_pairs != 1]
+x_var = st.selectbox("Select X Variable", df.columns)
+y_var = st.selectbox("Select Y Variable", df.columns)
 
-print("\nTop Positive Correlations:")
-print(corr_pairs.head(10))
+fig3, ax3 = plt.subplots()
 
-print("\nTop Negative Correlations:")
-print(corr_pairs.tail(10))
+sns.scatterplot(data=df, x=x_var, y=y_var, ax=ax3)
+
+ax3.set_title(f"{x_var} vs {y_var}")
+
+st.pyplot(fig3)
