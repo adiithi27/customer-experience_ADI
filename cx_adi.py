@@ -11,7 +11,7 @@ sns.set(style="whitegrid")
 # 2. LOAD DATASET
 # ======================================
 
-df = pd.read_csv("cx_dataset.csv")
+df = pd.read_csv("cx_simulated_dataset_400.csv")
 
 # View first rows
 print(df.head())
